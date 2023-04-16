@@ -1,97 +1,72 @@
-var formSubmitHandler = function (event) {
-    event.preventDefault();
-  
-    var username = nameInputEl.value.trim();
-  
-    if (username) {
-      getUserRepos(username);
-  
-      repoContainerEl.textContent = '';
-      nameInputEl.value = '';
-    } else {
-      alert('Please enter a GitHub username');
-    }
-  };
-  
-  var buttonClickHandler = function (event) {
-    var language = event.target.getAttribute('data-language');
-  
-    if (language) {
-      getFeaturedRepos(language);
-  
-      repoContainerEl.textContent = '';
-    }
-  };
-  
-  var getUserRepos = function (user) {
-    var apiUrl = 'https://api.github.com/users/' + user + '/repos';
-  
-    fetch(apiUrl)
-      .then(function (response) {
-        if (response.ok) {
-          console.log(response);
-          response.json().then(function (data) {
-            console.log(data);
-            displayRepos(data, user);
-          });
-        } else {
-          alert('Error: ' + response.statusText);
+var cityId = document.querySelector('#city')
+var priorCity = document.querySelector('#priorCity')
+var currentWeather = document.querySelector('#currentWeather')
+var fiveDay = document.querySelector('#cityForcast')
+var humidity = document.querySelector('#humidity')
+var temp = document.querySelector('#temp')
+var wind = document.querySelector('#wind')
+var search = document.querySelector('#search')
+var apiKey = '59ab240baddbecea4a276e311442c974'
+
+// http://api.openweathermap.org/geo/1.0/direct?q={city name},001&appid=apiKey
+// api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={API key}
+
+var formSubmit = function (event) {
+  event.preventDefault()
+
+  var citySearch = cityId.value.trim()
+
+  if (citySearch) {
+    getCordinants(citySearch)
+  } else {
+    alert('Enter a city name')
+  }
+}
+
+var getWeather = function (lat, lon) {
+  var apiUrl = 'https://api.openweathermap.org/data/2.5/forecast?lat='+localStorage.getItem('lat')+'&lon='+localStorage.getItem('lon')+'&appid='+apiKey+'&units=imperial'
+  fetch(apiUrl)
+  .then(function (response) {
+    if(response.ok) {
+      console.log(response)
+      response.json().then(function(data) {
+        console.log(data)
+        for (var i = 0; i < data.length; i++){
+          localStorage.setItem('city', data[i].city.name)
+          localStorage.setItem('date', data[i].list.dt)
+          localStorage.setItem('icon', data[i].list.weather.icon)
+          localStorage.setItem('temp', data[i].list.main.temp)
+          localStorage.setItem('wind', data[i].list.wind.speed)
+          localStorage.setItem('humidity', data[i].list.main.humidity)
         }
       })
-      .catch(function (error) {
-        alert('Unable to connect to GitHub');
-      });
-  };
-  
-  var getFeaturedRepos = function (language) {
-    var apiUrl = 'https://api.github.com/search/repositories?q=' + language + '+is:featured&sort=help-wanted-issues';
-  
-    fetch(apiUrl).then(function (response) {
-      if (response.ok) {
-        response.json().then(function (data) {
-          displayRepos(data.items, language);
-        });
-      } else {
-        alert('Error: ' + response.statusText);
-      }
-    });
-  };
-  
-  var displayRepos = function (repos, searchTerm) {
-    if (repos.length === 0) {
-      repoContainerEl.textContent = 'No repositories found.';
-      return;
     }
-  
-    repoSearchTerm.textContent = searchTerm;
-  
-    for (var i = 0; i < repos.length; i++) {
-      var repoName = repos[i].owner.login + '/' + repos[i].name;
-  
-      var repoEl = document.createElement('a');
-      repoEl.classList = 'list-item flex-row justify-space-between align-center';
-      repoEl.setAttribute('href', './single-repo.html?repo=' + repoName);
-  
-      var titleEl = document.createElement('span');
-      titleEl.textContent = repoName;
-  
-      repoEl.appendChild(titleEl);
-  
-      var statusEl = document.createElement('span');
-      statusEl.classList = 'flex-row align-center';
-  
-      if (repos[i].open_issues_count > 0) {
-        statusEl.innerHTML =
-          "<i class='fas fa-times status-icon icon-danger'></i>" + repos[i].open_issues_count + ' issue(s)';
-      } else {
-        statusEl.innerHTML = "<i class='fas fa-check-square status-icon icon-success'></i>";
-      }
-  
-      repoEl.appendChild(statusEl);
-  
-      repoContainerEl.appendChild(repoEl);
+  })
+}
+
+var getCordinants = function (cityId) {
+  var apiUrl = 'https://api.openweathermap.org/geo/1.0/direct?q='+cityId+'&appid=59ab240baddbecea4a276e311442c974'
+  fetch(apiUrl)
+  .then(function (response) {
+    if(response.ok) {
+      console.log(response)
+      response.json().then(function (data) {
+        console.log(data)
+        for (var i = 0; i < data.length; i++){
+          console.log(data[i].lat)
+          console.log(data[i].lon)
+          localStorage.setItem('lat', data[i].lat)
+          localStorage.setItem('lon', data[i].lon)
+        }
+        getWeather('lat', 'lon')
+      })
+    } else {
+      alert('Error: ' + response.statusText)
     }
-  };
-  
-  userFormEl.addEventListener('submit', formSubmitHandler);
-  languageButtonsEl.addEventListener('click', buttonClickHandler);
+  })
+  .catch(function (error) {
+    alert('Unable to connect to openweathermap')
+  })
+}
+
+search.addEventListener('submit', formSubmit)

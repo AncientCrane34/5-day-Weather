@@ -19,17 +19,31 @@
     <main>
         <div>
             <h2>Search for a city:</h2>
-            <input>
-            <button>Search</button>
+            <form id="search">
+                <input name="city" id="city" type="text"/>
+                <button type="submit" class="btn">Search</button>
+            </form>
         </div>
 
-        <div></div>
+        <ul id="priorCity"></ul>
 
-        <div></div>
+        <div id="cityinfo">
+            <div>
+                <div>
+                    <h4 class="title"></h4>
+                    <p id="temp"></p>
+                    <p id="humidity"></p>
+                    <p id="wind"></p>
+                </div>
+            </div>
+        </div>
 
         <div>
             <h3>5-day forcast</h3>
-            <div></div>
+            <div id="cityForcast"></div>
         </div>
     </main>
+
+    <script src="./assets/script/script.js"></script>
 </body>
+</html>
