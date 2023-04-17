@@ -24,23 +24,19 @@ var formSubmit = function (event) {
 }
 
 var getWeather = function (lat, lon) {
-  var apiUrl = 'https://api.openweathermap.org/data/2.5/forecast?lat='+localStorage.getItem('lat')+'&lon='+localStorage.getItem('lon')+'&appid='+apiKey+'&units=imperial'
+  var apiUrl = 'https://api.openweathermap.org/data/2.5/forecast?lat='+localStorage.getItem('lat')+'&lon='+localStorage.getItem('lon')+'&appid='+apiKey+'&units=imperial&cnt=5'
   fetch(apiUrl)
   .then(function (response) {
-    if(response.ok) {
-      console.log(response)
-      response.json().then(function(data) {
-        console.log(data)
-        for (var i = 0; i < data.length; i++){
-          localStorage.setItem('city', data[i].city.name)
-          localStorage.setItem('date', data[i].list.dt)
-          localStorage.setItem('icon', data[i].list.weather.icon)
-          localStorage.setItem('temp', data[i].list.main.temp)
-          localStorage.setItem('wind', data[i].list.wind.speed)
-          localStorage.setItem('humidity', data[i].list.main.humidity)
-        }
-      })
-    }
+    return response.json();
+  })
+  .then(function (data) {
+    console.log(data)
+    console.log(data.city.name)
+    console.log(data.list.dt)
+    // console.log(data.weather.id)
+    console.log(data.list.main.temp)
+    console.log(data.list.wind.speed)
+    console.log(data.list.main.humidity)
   })
 }
 
