@@ -1,136 +1,180 @@
-var cityId = document.querySelector('#city')
-var priorCity = document.querySelector('#priorCity')
-var currentWeather = document.querySelector('#currentWeather')
-var forcast = document.querySelector('#cityForcast')
-var humidity = document.querySelector('#humidity')
-var temp = document.querySelector('#temp')
-var wind = document.querySelector('#wind')
-var search = document.querySelector('#search')
-var name = document.querySelector('#cityName')
-var cityName = document.querySelector('#cityInfo')
-var date = document.querySelector('#date')
-var icon = document.querySelector('#icon')
-var apiKey = '59ab240baddbecea4a276e311442c974'
-var cities = []
-const forcastArray = [0, 8, 16, 24, 32]
+let userFormEl = document.querySelector('#user-form');
+let cityEl = document.querySelector('#city');
+let citySearchResultsEl = document.querySelector('#city-search-results');
+let cityListEl = document.querySelector('#city-list');
+let clearListEl = document.querySelector('#clear-list');
+let todaysWeatherL = document.querySelector('.todays-weather')
+let forcastWeatherEl = document.querySelector('.forcast-weather')
+let searchHistory = []
 
-// 0, 8, 16, 24, 32
-// http://api.openweathermap.org/geo/1.0/direct?q={city name},001&appid=apiKey
-// api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={API key}
 
-// if (localStorage.getitems("cities")) {
-//   storedCities = JSON.parse(localStorage.getItem("cities"))
-//   for (var i = 0; i < storedCities.length; i++) {
-//     lastCitySearched = storedCities.length - 1
-//     var lastCity = storedCities[lastCitySearched]
-//   }
-// } else {
-//   cities;
-// }
-
-var formSubmit = function (event) {
+// function to handle form submission
+let formSubmitHandler = (event) => {
   event.preventDefault()
-  // console.log("FORM SUBMIT")
-  var citySearch = cityId.value.trim()
-  // console.log(citySearch)
-  if (citySearch) {
-    getCordinants(citySearch)
+
+  let city = cityEl.value.trim()
+  if (city) {
+    getCoordinates(city)
+    storeSearch(city)
+    getHistory()
+    cityEl.value = ""
   } else {
-    alert('Enter a city name')
+    alert('Enter a city')
   }
 }
 
+let getCoordinates = (city) => {
+  todaysWeatherL.textContent = ""
+  let apiUrl = "https://api.openweathermap.org/geo/1.0/direct?q=" + city + "&limit=3&appid=59ab240baddbecea4a276e311442c974"
 
-
-var getWeather = function (lat, lon) {
-  // console.log("lat: "+lat)
-  // console.log("lon: "+lon)
-  var apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=imperial&appid=${apiKey}`
-  fetch(apiUrl)
-  .then(function (response) {
-    return response.json();
-  })
-  .then(function (data) {
-    // console.log("FORCAST DATA")
-    // console.log(data)
-    cities.push(data.city.name)
-    localStorage.setItem("cities", JSON.stringify(cities))
-    // localStorage.setItem("currentCity", JSON.stringify(data.city.name))
-    // localStorage.setItem("date", JSON.stringify(data.list[0].dt_txt))
-    // // localStorage.setItem("icon", JSON.stringify(data.list[0].weather.icon))
-    // localStorage.setItem("temp", JSON.stringify(data.list[0].main.temp))
-    // localStorage.setItem("wind", JSON.stringify(data.list[0].wind.speed))
-    // localStorage.setItem("humidity", JSON.stringify(data.list[0].main.humidity))
-    // localStorage.setItem("icon", JSON.stringify(data.list[0].weather[0].icon))
-    // icon.src = "http://openweathermap.org/img/wn/"+data.list[0].weather[0].icon+"@2x.png"
-    // console.log(data.list[0].dt_txt)
-    // console.log(data.list[0].weather[0].icon)
-    // console.log(data.list[0].main.temp)
-    // console.log(data.list[0].wind.speed)
-    // console.log(data.list[0].main.humidity)
-    renderToday(data)
-    renderFiveDay(data)
-    renderPriorCity()
-  })
-}
-
-var renderToday = function (data) {
-  cityName.textContent = data.city.name
-  date.textContent = data.list[0].dt_txt
-  temp.textContent = data.list[0].main.temp
-  wind.textContent = data.list[0].wind.speed
-  humidity.textContent = data.list[0].main.humidity
-  icon.src = "http://openweathermap.org/img/wn/"+data.list[0].weather[0].icon+"@2x.png"
-  // console.log("http://openweathermap.org/img/wn/"+localStorage.getItem('icon')+"@2x.png")
-}
-
-var renderFiveDay = function (data) {
-  for (const value of forcastArray) {
-    var textDate = document.createElement('h4')
-    var textTemp = document.createElement('p')
-    var textWind = document.createElement('p')
-    var textHumid = document.createElement('p')
-    var image = document.createElement('img')
-    textDate.textContent = data.list[value].dt_txt
-    textTemp.textContent = data.list[value].main.temp
-    textWind.textContent = data.list[value].wind.speed
-    textHumid.textContent = data.list[value].main.humidity
-    image.src = "http://openweathermap.org/img/wn/"+data.list[value].weather[0].icon+"@2x.png"
-    forcast.append(textDate)
-    forcast.append(textTemp)
-    forcast.append(image)
-    forcast.append(textWind)
-    forcast.append(textHumid)
-  }
-}
-
-var renderPriorCity = function () {
-  priorCity.textContent = localStorage.getItem("cities")
-}
-
-var getCordinants = function(cityId) {
-  var apiUrl = 'https://api.openweathermap.org/geo/1.0/direct?q='+cityId+'&appid=59ab240baddbecea4a276e311442c974'
-  fetch(apiUrl)
-  .then(function (response) {
+  fetch(apiUrl).then(function(response) {
     if(response.ok) {
-      response.json().then(function (data) {
-        const lat = data[0].lat
-        const lon =  data[0].lon
-        // for (var i = 0; i < data.length; i++){
-        //   console.log(data[i].lat)
-        //   console.log(data[i].lon)
-        //   localStorage.setItem('lat', data[i].lat)
-        //   localStorage.setItem('lon', data[i].lon)
-        // }
-        getWeather(lat, lon)
+      response.json().then(function(data) {
+        getWeather(data[0]);
+        getForcast(data[0])
       })
     } else {
-      alert('Error: ' + response.statusText)
+      console.log("error")
     }
-  })
-  .catch(function (error) {
-    alert('Unable to connect to openweathermap')
+  }.catch(function(err) {
+    console.log(err)                                           
+  }))
+};
+
+const getWeather = (location => {
+  let { lat, lon } = location
+
+  let apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=&limit=3&appid=59ab240baddbecea4a276e311442c974`
+
+  fetch(apiUrl)
+    .then(function (response){
+      return response.json()
+    })
+    .then(function (data){
+      renderToday(data)
+    })
+})
+
+const getForcast = (location) => {
+  let {lat, lon} = location;
+
+  let apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=&limit=3&appid=59ab240baddbecea4a276e311442c974`
+
+  fetch(apiUrl)
+    .then(function (response){
+      return response.json()
+    })
+    .then(function (data){
+      renderForcast(data)
+    })
+}
+
+const renderToday = (data) => {
+  let currentDate = dayjs().format('MMM D, YYYY')
+  let cityName = document.createElement('div')
+  let cityTemp = document.createElement('div')
+  let cityHumidity = document.createElement('div')
+  let cityWindSpeed = document.createElement('div')
+  let iconId = data.weather[0].icon
+  let iconUrl = `http://openweathermap.org/img/w/${iconId}.png`
+  let iconIMG = document.createElement('img')
+
+  iconIMG.setAttribute('src', iconUrl)
+
+  cityName.textContent = data.name
+  cityTemp.textContent = 'TEMP: ' + data.main.temp
+  cityHumidity.textContent = 'Humidity: ' + data.main.humidity
+  cityWindSpeed.textContent = 'Wind Speed: ' + data.wind.speed
+
+  todaysWeatherL.append(currentDate)
+  todaysWeatherL.append(cityName)
+  todaysWeatherL.append(iconIMG)
+  todaysWeatherL.append(temp)
+  todaysWeatherL.append(humidity)
+  todaysWeatherL.append(windSpeed)
+};
+
+const renderForcast = (data) => {
+  let forcastArr = data.list
+  let dayArr = []
+
+  for(let i = 0; i < forcastArr.length; i++) {
+    let timeStamp = forcastArr[i].dt;
+    let hour = dayjs.unix(timeStamp).format('HH');
+    let convertedDay = dayjs.unix(timeStamp).format('D');
+    let today = dayjs().format('D');
+    if (today !== convertedDay && dayArr.length === 0) {
+      dayArr.push(forcastArr[i]);
+    } else if (hour === '01') {
+      dayArr.push(forcastArr[i])
+    }
+  }
+  renderForcastCard(dayArr)
+}
+
+const renderForcastCard = (data) => {
+  forcastWeatherEl.innerHTML=""
+
+  data.map((forcast) => {
+    let card = document.createElement('div')
+    let cardTitle = document.createElement('div')
+    let iconId = forcast.weather[0].icon
+    let iconUrl = `http://openweathermap.org/img/w/${iconId}.png`
+    let iconImg = document.createElement('img')
+    let temp = document.createElement('div')
+    let wind = document.createElement('div')
+    let humidity = document.createElement('div')
+
+    cardTitle.textContent = dayjs.unix(forcast.dt).format('MMM D, YYYY')
+    iconImg.setAttribute('src', iconUrl)
+    temp.textContent = 'Temp; ' + forcast.main.temp
+    wind.textContent = 'Wind Speed; ' + forcast.wind.speed
+    humidity.textContent = 'Humidity; ' + forcast.main.temp
+
+    card.classList.add('forcastCard')
+
+    card.appendChild(cardTitle)
+    card.appendChild(iconImg)
+    card.appendChild(temp)
+    card.appendChild(wind)
+    card.appendChild(humidity)
+    forcastWeatherEl.appendChild(card)
   })
 }
 
-search.addEventListener('submit', formSubmit)
+const storeSearch = (input) => {
+  searchHistory.push(input)
+
+  localStorage.setItem('search-history', searchHistory)
+}
+
+const getHistory = () => {
+  cityListEl.textContent = ''
+
+  let storedHistory = localStorage.getItem('search-history')
+
+  if(storedHistory) {
+    searchHistory = storedHistory.split(',')
+  }
+  for(let i = 0; i < searchHistory.length; i++) {
+    let citiesEl = document.createElement('button')
+    citiesEl.classList.add('btn', 'mb-3', 'city-buttons')
+    citiesEl.textContent = searchHistory[i]
+    cityListEl.append(citiesEl)
+  }
+}
+
+const clearHistory = () => {
+  localStorage.removeItem('search-history')
+  searchHistory = []
+  cityListEl.textContent = ""
+}
+
+getHistory()
+
+userFormEl.addEventListener("submit", formSubmitHandler)
+cityListEl.addEventListener('click', (e) => {
+  let city = e.target.textContent
+  getCoordinates(city)
+})
+clearListEl.addEventListener('click', clearHistory)
